@@ -40,6 +40,28 @@ protected:
   double SOG;
   double WindSpeed;
   double WindAngle;
+
+  double STW;
+  
+  double TWS;
+  double TWA; 
+  double TWD;
+  
+  double AWS;
+  double AWA;
+  double AWD;
+
+  
+  double MaxAws;
+  double MaxTws;
+
+  double RudderPosition;
+  double WaterTemperature;
+  double WaterDepth;
+    
+  uint32_t TripLog;
+  uint32_t Log;
+
   unsigned long LastHeadingTime;
   unsigned long LastCOGSOGTime;
   unsigned long LastPositionTime;
@@ -61,9 +83,19 @@ protected:
   void HandleCOGSOG(const tN2kMsg &N2kMsg); // 129026
   void HandleGNSS(const tN2kMsg &N2kMsg); // 129029
   void HandleWind(const tN2kMsg &N2kMsg); // 130306
+  void HandleLog(const tN2kMsg &N2kMsg); // 128275
+  void HandleRudder(const tN2kMsg &N2kMsg); // 127245
   void SetNextRMCSend() { NextRMCSend=millis()+RMCPeriod; }
   void SendRMC();
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
+  void HandleWaterTemp(const tN2kMsg &N2kMsg); // 130310
+
+  // AIS
+  void HandleAISClassAPosReport(const tN2kMsg &N2kMsg);   // 129038 AIS Class A Position Report
+  void HandleAISClassAMessage5(const tN2kMsg &N2kMsg);     // 129794 AIS class A Static and Voyage Related Data
+  void HandleAISClassBMessage18(const tN2kMsg &N2kMsg);    // 129039 AIS Class B Position Report
+  void HandleAISClassBMessage24A(const tN2kMsg &N2kMsg);  // 129809 AIS Class B "CS" Static Data Report, Part A
+  void HandleAISClassBMessage24B(const tN2kMsg &N2kMsg);  // 129810 AIS Class B "CS" Static Data Report, Part 
 
 public:
   tN2kDataToNMEA0183(tNMEA2000 *_pNMEA2000, tNMEA0183 *_pNMEA0183) : tNMEA2000::tMsgHandler(0,_pNMEA2000) {
@@ -85,4 +117,3 @@ public:
   }
   void Update();
 };
-
