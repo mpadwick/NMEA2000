@@ -68,22 +68,11 @@ const unsigned long ReceiveMessages[] PROGMEM={/*126992L,*/ // System time
                                               130306L, // Wind
                                               128275UL,// Log
                                               127245UL,// Rudder
-                                              129038L, // AIS Class A
-                                              129039L, // AIS Class B
-                                              129040L, // AIS Class B Extended
-                                              129794L, // AIS Class A Static and Voyage
-                                              129792L, // AIS DGNSS Broadcast
-                                              129793L, // AIS UTC and Date Report
-                                              129795L, // AIS Addressed Binary Message
-                                              129796L, // AIS Ack
-                                              129797L, // AIS Broadcast Binary Message
-                                              129798L, // AIS SAR Aircraft Position
-                                              129803L, // AIS Interrogation
-                                              129804L, // AIS Assignment Mode Command
-                                              129805L, // AIS Data Link Management Message
-                                              129806L, // AIS Channel Management
-                                              129810L,
-                                              129811L,
+                                              129038L,  // AIS Class A Position Report, Message Type 1
+                                              129039L,  // AIS Class B Position Report, Message Type 18
+                                              12979L, // AIS Class A Ship Static and Voyage related data, Message Type 5
+                                              129809L, // AIS Class B "CS" Static Data Report, Part A
+                                              129810L, // AIS Class B "CS" Static Data Report, Part B
                                               130310UL, // WaterTemp
                                               130311UL, // WaterTemp
                                               0};
