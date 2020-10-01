@@ -17,6 +17,7 @@
 #include "N2kDataToNMEA0183.h"
 #include "BoardSerialNumber.h"
 #include "List.h"
+#include <Preferences.h>
 
 #include <WiFiClient.h>
 #include <WebServer.h>
@@ -40,6 +41,9 @@ const size_t MaxClients=10;
 bool SendNMEA0183Conversion=true; // Do we send NMEA2000 -> NMEA0183 consverion
 bool SendSeaSmart=true; // Do we send NMEA2000 messages in SeaSmart format
 bool ResetWiFiSettings=true; // If you have tested other code in your module, it may have saved settings and have difficulties to make connection.
+
+int NodeAddress;  // To store last Node Address
+Preferences preferences;             // Nonvolatile storage on ESP32 - To store LastDeviceAddress
 
 WebServer webserver(80);
 
@@ -122,8 +126,8 @@ void setup() {
   */
   WiFi.begin(ssid, password);
 
-  Serial.println(F("DHTxx test!"));
-  dht.begin();
+//  Serial.println(F("DHTxx test!"));
+//  dht.begin();
 
 
   size_t WaitCount=0;
@@ -202,13 +206,21 @@ void CheckConnections() {
 //*****************************************************************************
 void loop() {
   CheckConnections();
-  ReadingTempHumid();
+//  ReadingTempHumid();
   NMEA2000.ParseMessages();
   tN2kDataToNMEA0183.Update();
   // Dummy to empty input buffer to avoid board to stuck with e.g. NMEA Reader
   if ( Serial.available() ) { Serial.read(); } 
   UpdateLedState();
   webserver.handleClient();
+
+  int SourceAddress = NMEA2000.GetN2kSource();
+  if (SourceAddress != NodeAddress) { // Save potentially changed Source Address to NVS memory
+    preferences.begin("nvs", false);
+    preferences.putInt("LastNodeAddress", SourceAddress);
+    preferences.end();
+    Serial.printf("Address Change: New Address=%d\n", SourceAddress);
+  }
 }
 
 // Code below is just for handling led blinking.
@@ -259,7 +271,8 @@ void InitNMEA2000() {
   uint32_t SerialNumber=GetSerialNumber();
   snprintf(SnoStr,32,"%lu",(long unsigned int)SerialNumber);
 
-  NMEA2000.SetProductInformation(SnoStr, // Manufacturer's Model serial code
+  //NMEA2000.SetProductInformation(SnoStr, // Manufacturer's Model serial code
+  NMEA2000.SetProductInformation("1", // Manufacturer's Model serial code
                                  130, // Manufacturer's product code
                                  "N2k->NMEA0183 WiFi",  // Manufacturer's Model ID
                                  "1.0.0.1 (2018-04-08)",  // Manufacturer's Software version code
@@ -269,11 +282,18 @@ void InitNMEA2000() {
   NMEA2000.SetDeviceInformation(SerialNumber, // Unique number. Use e.g. Serial number.
                                 130, // Device function=PC Gateway. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
                                 25, // Device class=Inter/Intranetwork Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
-                                2046 // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf
+                                1851 // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf
                                );
 
   NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text. Leave uncommented for default Actisense format.
-  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode,32);
+
+  preferences.begin("nvs", false);                          // Open nonvolatile storage (nvs)
+  NodeAddress = preferences.getInt("LastNodeAddress", 32);  // Read stored last NodeAddress, default 32
+  preferences.end();
+
+  Serial.printf("NodeAddress=%d\n", NodeAddress);
+  
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, NodeAddress);
   //NMEA2000.EnableForward(false);
 
   NMEA2000.ExtendTransmitMessages(TransmitMessages);
