@@ -1,7 +1,7 @@
 /*
 N2kMsg.cpp
 
-Copyright (c) 2015-2020 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2021 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -426,8 +426,18 @@ bool tN2kMsg::GetBuf(void *buf, size_t Length, int &Index) const {
 }
 
 //*****************************************************************************
+bool tN2kMsg::SetByte(uint8_t v, int &Index) {
+  if (Index<DataLen) {
+    Data[Index]=v;
+    Index++;
+    return true;
+  } else
+    return false;
+}
+
+//*****************************************************************************
 bool tN2kMsg::Set2ByteUInt(uint16_t v, int &Index) {
-  if (Index+2<=DataLen) {
+  if (Index+1<DataLen) {
     SetBuf2ByteUInt(v,Index,Data);
     return true;
   } else
@@ -660,7 +670,7 @@ float GetBufFloat(int &index, const unsigned char *buf, float def) {
   int32_t vl = GetBuf<int32_t>(4, index, buf);
   float ret;
   if ( !N2kIsNA(vl) ) {
-    memcpy(&ret,&vl,8);
+    memcpy(&ret,&vl,4);
     if ( isnan(ret) ) ret=def;
   } else { // On avr double==float
     ret=def;

@@ -1,7 +1,7 @@
 /*
 N2kMessages.h
 
-Copyright (c) 2015-2020 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2021 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -40,21 +40,22 @@ NMEA2000.h
 #include "N2kTypes.h"
 #include <stdint.h>
 
-inline double RadToDeg(double v) { return N2kIsNA(v)?v:v*180.0/3.1415926535897932384626433832795; }
-inline double DegToRad(double v) { return N2kIsNA(v)?v:v/180.0*3.1415926535897932384626433832795; }
-inline double CToKelvin(double v) { return N2kIsNA(v)?v:v+273.15; }
-inline double KelvinToC(double v) { return N2kIsNA(v)?v:v-273.15; }
+inline double RadToDeg(double v) { return N2kIsNA(v)?v:v*180.0/3.1415926535897932384626433832795L; }
+inline double DegToRad(double v) { return N2kIsNA(v)?v:v/180.0*3.1415926535897932384626433832795L; }
+inline double CToKelvin(double v) { return N2kIsNA(v)?v:v+273.15L; }
+inline double KelvinToC(double v) { return N2kIsNA(v)?v:v-273.15L; }
 inline double FToKelvin(double v) { return N2kIsNA(v)?v:(v-32)*5.0/9.0+273.15; }
 inline double KelvinToF(double v) { return N2kIsNA(v)?v:(v-273.15)*9.0/5.0+32; }
-inline double mBarToPascal(double v) { return N2kIsNA(v)?v:v*100; }
-inline double PascalTomBar(double v) { return N2kIsNA(v)?v:v/100; }
-inline double hPAToPascal(double v) { return N2kIsNA(v)?v:v*100; }
-inline double PascalTohPA(double v) { return N2kIsNA(v)?v:v/100; }
-inline double AhToCoulomb(double v) { return N2kIsNA(v)?v:v*3600; }
-inline double CoulombToAh(double v) { return N2kIsNA(v)?v:v/3600; }
-inline double hToSeconds(double v) { return N2kIsNA(v)?v:v*3600; }
-inline double SecondsToh(double v) { return N2kIsNA(v)?v:v/3600; }
-inline double msToKnots(double v) { return N2kIsNA(v)?v:v*3600/1852.0; }
+inline double mBarToPascal(double v) { return N2kIsNA(v)?v:v*100L; }
+inline double PascalTomBar(double v) { return N2kIsNA(v)?v:v/100L; }
+inline double hPAToPascal(double v) { return N2kIsNA(v)?v:v*100L; }
+inline double PascalTohPA(double v) { return N2kIsNA(v)?v:v/100L; }
+inline double AhToCoulomb(double v) { return N2kIsNA(v)?v:v*3600L; }
+inline double CoulombToAh(double v) { return N2kIsNA(v)?v:v/3600L; }
+inline double hToSeconds(double v) { return N2kIsNA(v)?v:v*3600L; }
+inline double SecondsToh(double v) { return N2kIsNA(v)?v:v/3600L; }
+inline double msToKnots(double v) { return N2kIsNA(v)?v:v*1.9438444924406047516198704103672L; } // 3600L/1852.0L
+inline double KnotsToms(double v) { return N2kIsNA(v)?v:v*0.51444444444444444444444444444444L; } // 1852L/3600.0L
 
 //*****************************************************************************
 // System date/time
@@ -243,12 +244,57 @@ inline bool ParseN2kEngineParamRapid(const tN2kMsg &N2kMsg, unsigned char &Engin
 void SetN2kPGN127489(tN2kMsg &N2kMsg, unsigned char EngineInstance, double EngineOilPress, double EngineOilTemp, double EngineCoolantTemp, double AltenatorVoltage,
                        double FuelRate, double EngineHours, double EngineCoolantPress=N2kDoubleNA, double EngineFuelPress=N2kDoubleNA,
                        int8_t EngineLoad=N2kInt8NA, int8_t EngineTorque=N2kInt8NA,
+                       tN2kEngineDiscreteStatus1 Status1=0, tN2kEngineDiscreteStatus2 Status2=0);
+
+inline void SetN2kEngineDynamicParam(tN2kMsg &N2kMsg, unsigned char EngineInstance, double EngineOilPress, double EngineOilTemp, double EngineCoolantTemp, double AltenatorVoltage,
+                       double FuelRate, double EngineHours, double EngineCoolantPress=N2kDoubleNA, double EngineFuelPress=N2kDoubleNA,
+                       int8_t EngineLoad=N2kInt8NA, int8_t EngineTorque=N2kInt8NA,
+                       tN2kEngineDiscreteStatus1 Status1=0, tN2kEngineDiscreteStatus2 Status2=0) {
+  SetN2kPGN127489(N2kMsg,EngineInstance, EngineOilPress, EngineOilTemp, EngineCoolantTemp, AltenatorVoltage,
+                       FuelRate, EngineHours, EngineCoolantPress, EngineFuelPress, EngineLoad, EngineTorque,
+                       Status1,Status2);
+}                         
+
+inline void SetN2kPGN127489(tN2kMsg &N2kMsg, unsigned char EngineInstance, double EngineOilPress, double EngineOilTemp, double EngineCoolantTemp, double AltenatorVoltage,
+                       double FuelRate, double EngineHours, double EngineCoolantPress=N2kDoubleNA, double EngineFuelPress=N2kDoubleNA,
+                       int8_t EngineLoad=N2kInt8NA, int8_t EngineTorque=N2kInt8NA,
                        bool flagCheckEngine=false,       bool flagOverTemp=false,         bool flagLowOilPress=false,         bool flagLowOilLevel=false,
                        bool flagLowFuelPress=false,      bool flagLowSystemVoltage=false, bool flagLowCoolantLevel=false,     bool flagWaterFlow=false,
                        bool flagWaterInFuel=false,       bool flagChargeIndicator=false,  bool flagPreheatIndicator=false,    bool flagHighBoostPress=false,
                        bool flagRevLimitExceeded=false,  bool flagEgrSystem=false,        bool flagTPS=false,                 bool flagEmergencyStopMode=false,
                        bool flagWarning1=false,          bool flagWarning2=false,         bool flagPowerReduction=false,      bool flagMaintenanceNeeded=false,
-                       bool flagEngineCommError=false,   bool flagSubThrottle=false,      bool flagNeutralStartProtect=false, bool flagEngineShuttingDown=false);
+                       bool flagEngineCommError=false,   bool flagSubThrottle=false,      bool flagNeutralStartProtect=false, bool flagEngineShuttingDown=false) {
+  tN2kEngineDiscreteStatus1 Status1;
+  tN2kEngineDiscreteStatus2 Status2;
+  Status1.Bits.CheckEngine=flagCheckEngine;
+  Status1.Bits.OverTemperature=flagOverTemp;
+  Status1.Bits.LowOilPressure=flagLowOilPress;
+  Status1.Bits.LowOilLevel=flagLowOilLevel;
+  Status1.Bits.LowFuelPressure=flagLowFuelPress;
+  Status1.Bits.LowSystemVoltage=flagLowSystemVoltage;
+  Status1.Bits.LowCoolantLevel=flagLowCoolantLevel;
+  Status1.Bits.WaterFlow=flagWaterFlow;
+  Status1.Bits.WaterInFuel=flagWaterInFuel;
+  Status1.Bits.ChargeIndicator=flagChargeIndicator;
+  Status1.Bits.PreheatIndicator=flagPreheatIndicator;
+  Status1.Bits.HighBoostPressure=flagHighBoostPress;
+  Status1.Bits.RevLimitExceeded=flagRevLimitExceeded;
+  Status1.Bits.EGRSystem=flagEgrSystem;
+  Status1.Bits.ThrottlePositionSensor=flagTPS;
+  Status1.Bits.EngineEmergencyStopMode=flagEmergencyStopMode;
+  Status2.Bits.WarningLevel1=flagWarning1;
+  Status2.Bits.WarningLevel2=flagWarning2;
+  Status2.Bits.LowOiPowerReduction=flagPowerReduction;
+  Status2.Bits.MaintenanceNeeded=flagMaintenanceNeeded;
+  Status2.Bits.EngineCommError=flagEngineCommError;
+  Status2.Bits.SubOrSecondaryThrottle=flagSubThrottle;
+  Status2.Bits.NeutralStartProtect=flagNeutralStartProtect;
+  Status2.Bits.EngineShuttingDown=flagEngineShuttingDown;
+
+  SetN2kPGN127489(N2kMsg,EngineInstance, EngineOilPress, EngineOilTemp, EngineCoolantTemp, AltenatorVoltage,
+                       FuelRate, EngineHours, EngineCoolantPress, EngineFuelPress, EngineLoad, EngineTorque,
+                       Status1,Status2);
+}
 inline void SetN2kEngineDynamicParam(tN2kMsg &N2kMsg, unsigned char EngineInstance, double EngineOilPress, double EngineOilTemp, double EngineCoolantTemp, double AltenatorVoltage,
                        double FuelRate, double EngineHours, double EngineCoolantPress=N2kDoubleNA, double EngineFuelPress=N2kDoubleNA,
                        int8_t EngineLoad=N2kInt8NA, int8_t EngineTorque=N2kInt8NA,
@@ -271,7 +317,20 @@ inline void SetN2kEngineDynamicParam(tN2kMsg &N2kMsg, unsigned char EngineInstan
 bool ParseN2kPGN127489(const tN2kMsg &N2kMsg, unsigned char &EngineInstance, double &EngineOilPress,
                       double &EngineOilTemp, double &EngineCoolantTemp, double &AltenatorVoltage,
                       double &FuelRate, double &EngineHours, double &EngineCoolantPress, double &EngineFuelPress,
-                      int8_t &EngineLoad, int8_t &EngineTorque);
+                      int8_t &EngineLoad, int8_t &EngineTorque,
+                      tN2kEngineDiscreteStatus1 &Status1, tN2kEngineDiscreteStatus2 &Status2);
+
+inline bool ParseN2kPGN127489(const tN2kMsg &N2kMsg, unsigned char &EngineInstance, double &EngineOilPress,
+                      double &EngineOilTemp, double &EngineCoolantTemp, double &AltenatorVoltage,
+                      double &FuelRate, double &EngineHours, double &EngineCoolantPress, double &EngineFuelPress,
+                      int8_t &EngineLoad, int8_t &EngineTorque) {
+  tN2kEngineDiscreteStatus1 Status1;
+  tN2kEngineDiscreteStatus2 Status2;
+  return ParseN2kPGN127489(N2kMsg, EngineInstance, EngineOilPress,
+                    EngineOilTemp, EngineCoolantTemp, AltenatorVoltage,
+                    FuelRate, EngineHours,EngineCoolantPress, EngineFuelPress,
+                    EngineLoad, EngineTorque,Status1,Status2);
+}
 
 inline bool ParseN2kEngineDynamicParam(const tN2kMsg &N2kMsg, unsigned char &EngineInstance, double &EngineOilPress,
                       double &EngineOilTemp, double &EngineCoolantTemp, double &AltenatorVoltage,
@@ -284,13 +343,26 @@ inline bool ParseN2kEngineDynamicParam(const tN2kMsg &N2kMsg, unsigned char &Eng
 }
 inline bool ParseN2kEngineDynamicParam(const tN2kMsg &N2kMsg, unsigned char &EngineInstance, double &EngineOilPress,
                       double &EngineOilTemp, double &EngineCoolantTemp, double &AltenatorVoltage,
-                      double &FuelRate, double &EngineHours) {
-    double EngineCoolantPress, EngineFuelPress;
-    int8_t EngineLoad, EngineTorque;
+                      double &FuelRate, double &EngineHours, double &EngineCoolantPress, double &EngineFuelPress,
+                      int8_t &EngineLoad, int8_t &EngineTorque,
+                      tN2kEngineDiscreteStatus1 &Status1, tN2kEngineDiscreteStatus2 &Status2) {
     return ParseN2kPGN127489(N2kMsg, EngineInstance, EngineOilPress,
                       EngineOilTemp, EngineCoolantTemp, AltenatorVoltage,
                       FuelRate, EngineHours,EngineCoolantPress, EngineFuelPress,
-                      EngineLoad, EngineTorque);
+                      EngineLoad, EngineTorque,
+                      Status1, Status2);
+}
+inline bool ParseN2kEngineDynamicParam(const tN2kMsg &N2kMsg, unsigned char &EngineInstance, double &EngineOilPress,
+                      double &EngineOilTemp, double &EngineCoolantTemp, double &AltenatorVoltage,
+                      double &FuelRate, double &EngineHours) {
+    double EngineCoolantPress, EngineFuelPress;
+    int8_t EngineLoad, EngineTorque;
+    tN2kEngineDiscreteStatus1 Status1;
+    tN2kEngineDiscreteStatus2 Status2;
+    return ParseN2kPGN127489(N2kMsg, EngineInstance, EngineOilPress,
+                      EngineOilTemp, EngineCoolantTemp, AltenatorVoltage,
+                      FuelRate, EngineHours,EngineCoolantPress, EngineFuelPress,
+                      EngineLoad, EngineTorque,Status1,Status2);
 }
 
 //*****************************************************************************
@@ -484,10 +556,10 @@ inline bool ParseN2kFluidLevel(const tN2kMsg &N2kMsg, unsigned char &Instance, t
 //  - RippleVoltage         DC output voltage ripple in V
 //  - Capacity              Battery capacity in coulombs
 void SetN2kPGN127506(tN2kMsg &N2kMsg, unsigned char SID, unsigned char DCInstance, tN2kDCType DCType,
-                     unsigned char StateOfCharge, unsigned char StateOfHealth, double TimeRemaining, double RippleVoltage, double Capacity);
+                     unsigned char StateOfCharge, unsigned char StateOfHealth, double TimeRemaining, double RippleVoltage=N2kDoubleNA, double Capacity=N2kDoubleNA);
 
 inline void SetN2kDCStatus(tN2kMsg &N2kMsg, unsigned char SID, unsigned char DCInstance, tN2kDCType DCType,
-                     unsigned char StateOfCharge, unsigned char StateOfHealth, double TimeRemaining, double RippleVoltage, double Capacity) {
+                     unsigned char StateOfCharge, unsigned char StateOfHealth, double TimeRemaining, double RippleVoltage=N2kDoubleNA, double Capacity=N2kDoubleNA) {
   SetN2kPGN127506(N2kMsg,SID,DCInstance,DCType,StateOfCharge,StateOfHealth,TimeRemaining,RippleVoltage,Capacity);
 }
 
@@ -916,37 +988,6 @@ inline bool ParseN2kLocalOffset(const tN2kMsg &N2kMsg, uint16_t &DaysSince1970, 
   return ParseN2kPGN129033(N2kMsg,DaysSince1970,SecondsSinceMidnight,LocalOffset);
 }
 
-
-//*****************************************************************************
-// GNSS DOP data
-// Input:
-//  - SID                   Sequence ID. If your device is e.g. boat speed and GPS at same time, you can set same SID for different messages
-//                          to indicate that they are measured at same time.
-//  - DesiredMode           Desired DOP mode.
-//  - ActualMode            Actual DOP mode.
-//  - HDOP                  Horizontal Dilution Of Precision in meters.
-//  - PDOP                  Probable dilution of precision in meters.
-//  - TDOP                  Time dilution of precision
-// Output:
-//  - N2kMsg                NMEA2000 message ready to be send.
-void SetN2kPGN129539(tN2kMsg& N2kMsg, unsigned char SID, tN2kGNSSDOPmode DesiredMode, tN2kGNSSDOPmode ActualMode,
-                     double HDOP, double VDOP, double TDOP);
-
-inline void SetN2kGNSSDOPData(tN2kMsg& N2kMsg, unsigned char SID, tN2kGNSSDOPmode DesiredMode, tN2kGNSSDOPmode ActualMode,
-                              double HDOP, double VDOP, double TDOP)
-{
-    SetN2kPGN129539(N2kMsg, SID, DesiredMode, ActualMode, HDOP, VDOP, TDOP);
-}
-
-bool ParseN2kPgn129539(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kGNSSDOPmode& DesiredMode, tN2kGNSSDOPmode& ActualMode,
-                       double& HDOP, double& VDOP, double& TDOP);
-
-inline bool ParseN2kGNSSDOPData(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kGNSSDOPmode& DesiredMode, tN2kGNSSDOPmode& ActualMode,
-                         double& HDOP, double& VDOP, double& TDOP)
-{
-    return ParseN2kPgn129539(N2kMsg, SID, DesiredMode, ActualMode, HDOP, VDOP, TDOP);
-}
-
 //*****************************************************************************
 // AIS position reports for Class A
 // Input:
@@ -1068,6 +1109,113 @@ void SetN2kPGN129285(tN2kMsg &N2kMsg, uint16_t Start, uint16_t Database, uint16_
                         bool NavDirection, bool SupplementaryData, char* RouteName);
 
 bool AppendN2kPGN129285(tN2kMsg &N2kMsg, uint16_t WPID2, char* WPName2, double Latitude2, double Longitude2);
+
+//*****************************************************************************
+// GNSS DOP data
+// Input:
+//  - SID                   Sequence ID. If your device is e.g. boat speed and GPS at same time, you can set same SID for different messages
+//                          to indicate that they are measured at same time.
+//  - DesiredMode           Desired DOP mode.
+//  - ActualMode            Actual DOP mode.
+//  - HDOP                  Horizontal Dilution Of Precision in meters.
+//  - PDOP                  Probable dilution of precision in meters.
+//  - TDOP                  Time dilution of precision
+// Output:
+//  - N2kMsg                NMEA2000 message ready to be send.
+void SetN2kPGN129539(tN2kMsg& N2kMsg, unsigned char SID, tN2kGNSSDOPmode DesiredMode, tN2kGNSSDOPmode ActualMode,
+                     double HDOP, double VDOP, double TDOP);
+
+inline void SetN2kGNSSDOPData(tN2kMsg& N2kMsg, unsigned char SID, tN2kGNSSDOPmode DesiredMode, tN2kGNSSDOPmode ActualMode,
+                              double HDOP, double VDOP, double TDOP)
+{
+    SetN2kPGN129539(N2kMsg, SID, DesiredMode, ActualMode, HDOP, VDOP, TDOP);
+}
+
+bool ParseN2kPgn129539(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kGNSSDOPmode& DesiredMode, tN2kGNSSDOPmode& ActualMode,
+                       double& HDOP, double& VDOP, double& TDOP);
+
+inline bool ParseN2kGNSSDOPData(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kGNSSDOPmode& DesiredMode, tN2kGNSSDOPmode& ActualMode,
+                         double& HDOP, double& VDOP, double& TDOP)
+{
+    return ParseN2kPgn129539(N2kMsg, SID, DesiredMode, ActualMode, HDOP, VDOP, TDOP);
+}
+
+
+//*****************************************************************************
+struct tSatelliteInfo {
+  unsigned char PRN;
+  double Elevation;
+  double Azimuth;
+  double SNR;
+  double RangeResiduals;
+  tN2kPRNUsageStatus UsageStatus;
+};
+
+//*****************************************************************************
+// GNSS Satellites in View
+// Use first function for basic initialization and second for adding satellites.
+//
+// Initialize GNSS Satellites in View message
+// Input:
+//  - SID                   Sequence ID. If your device is e.g. boat speed and GPS at same time, you can set same SID for different messages
+//                          to indicate that they are measured at same time.
+//  - Mode                  Range residual mode.
+//  - SatelliteInfo         Satellite info see tSatelliteInfo above.
+void SetN2kPGN129540(tN2kMsg& N2kMsg, unsigned char SID=0xff, tN2kRangeResidualMode Mode=N2kDD072_Unavailable);
+
+// Append new satellite info for GNSS Satellites in View message
+// Input:
+//  - SatelliteInfo         Requested satellite info.
+//
+// Return:
+//   true  - if function succeeds.
+//   false - if no more satellites can be added or try to use wrong or uninitialized message.
+bool AppendN2kPGN129540(tN2kMsg& N2kMsg, const tSatelliteInfo& SatelliteInfo);
+
+inline void SetN2kGNSSSatellitesInView(tN2kMsg& N2kMsg, unsigned char SID=0xff, tN2kRangeResidualMode Mode=N2kDD072_Unavailable) {
+  SetN2kPGN129540(N2kMsg,SID,Mode);
+}
+
+inline bool AppendSatelliteInfo(tN2kMsg& N2kMsg, const tSatelliteInfo& SatelliteInfo) {
+  return AppendN2kPGN129540(N2kMsg,SatelliteInfo);
+}
+
+// Parse GNSS Satellites in View
+// Use first function to get basic information and specially NumberOfSVs. Then use second function to get
+// information for specific satellite. 
+// It is possible to use just second function, but it returns also false for wrong message.
+//
+// Request common information for GNSS Satellites in View
+// Output:
+//  - SID                   Sequence ID. If your device is e.g. boat speed and GPS at same time, you can set same SID for different messages
+//                          to indicate that they are measured at same time.
+//  - Mode                  Range residual mode.
+//  - NumberOfSVs           Number of satellite infos in message.
+//
+// Return:
+//   true  - if function succeeds.
+//   false - when called with wrong message.
+bool ParseN2kPGN129540(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kRangeResidualMode &Mode, uint8_t& NumberOfSVs);
+
+// Request specific satellite info from message.
+// Input:
+//  - SVIndex               Index of saelliten info requested.
+//
+// Output:
+//  - SatelliteInfo         Requested satellite info.
+//
+// Return:
+//   true  - if function succeeds.
+//   false - when called with wrong message or SVIndex in second function is out of range.
+bool ParseN2kPGN129540(const tN2kMsg& N2kMsg, uint8_t SVIndex, tSatelliteInfo& SatelliteInfo);
+
+inline bool ParseN2kPGNSatellitesInView(const tN2kMsg& N2kMsg, unsigned char& SID, tN2kRangeResidualMode &Mode, uint8_t& NumberOfSVs){
+  return ParseN2kPGN129540(N2kMsg,SID,Mode,NumberOfSVs);
+}
+inline bool ParseN2kPGNSatellitesInView(const tN2kMsg& N2kMsg, uint8_t SVIndex, tSatelliteInfo& SatelliteInfo){
+  return ParseN2kPGN129540(N2kMsg,SVIndex,SatelliteInfo);
+}
+
 
 //*****************************************************************************
 // AIS static data class A

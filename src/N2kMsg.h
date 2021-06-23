@@ -1,7 +1,7 @@
 /*
 N2kMsg.h
 
-Copyright (c) 2015-2020 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2021 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -161,6 +161,7 @@ public:
   bool GetVarStr(size_t &StrBufSize, char *StrBuf, int &Index) const;
   bool GetBuf(void *buf, size_t Length, int &Index) const;
 
+  bool SetByte(uint8_t v, int &Index);
   bool Set2ByteUInt(uint16_t v, int &Index);
 
   void Print(N2kStream *port, bool NoData=false) const;
